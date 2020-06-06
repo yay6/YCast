@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 
 from flask import Flask, request, url_for, redirect, abort, make_response
@@ -125,6 +126,15 @@ def upstream(path):
         return station_search()
     if 'statxml.asp' in path and request.args.get('id'):
         return get_station_info()
+    if 'navXML.asp' in path:
+        return radiobrowser_landing()
+    if 'FavXML.asp' in path:
+        return my_stations_landing()
+    if 'dynamOD' in path and request.args.get('id'):
+        return get_stream_url_no_redirect()
+    if path.endswith(".mp3"):
+        stationid = os.path.basename(path)[:-4]
+        return vtuner_redirect(get_stream_url_by_id(stationid))
     if 'loginXML.asp' in path:
         return landing()
     logging.error("Unhandled upstream query (/setupapp/%s)", path)
@@ -228,18 +238,26 @@ def station_search():
         return get_stations_page(stations, request).to_string()
 
 
-@app.route('/' + PATH_ROOT + '/' + PATH_PLAY)
-def get_stream_url():
-    stationid = request.args.get('id')
-    if not stationid:
-        logging.error("Stream URL without station ID requested")
-        abort(400)
+def get_stream_url_by_id(stationid):
     station = get_station_by_id(stationid, additional_info=True)
     if not station:
         logging.error("Could not get station with id '%s'", stationid)
         abort(404)
     logging.debug("Station with ID '%s' requested", station.id)
-    return vtuner_redirect(station.url)
+    return station.url
+
+
+def get_stream_url_no_redirect():
+    stationid = request.args.get('id')
+    if not stationid:
+        logging.error("Stream URL without station ID requested")
+        abort(400)
+    return get_stream_url_by_id(stationid)
+
+
+@app.route('/' + PATH_ROOT + '/' + PATH_PLAY)
+def get_stream_url():
+    return vtuner_redirect(get_stream_url_no_redirect())
 
 
 @app.route('/' + PATH_ROOT + '/' + PATH_STATION)
