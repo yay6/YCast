@@ -5,6 +5,8 @@ USER_AGENT = 'YCast'
 VAR_PATH = os.path.expanduser("~") + '/.ycast'
 CACHE_PATH = VAR_PATH + '/cache'
 
+STATIONID_LEN = 8
+PREFIX_LEN = 1
 
 class Directory:
     def __init__(self, name, item_count):
@@ -13,27 +15,28 @@ class Directory:
 
 
 def generate_stationid_with_prefix(uid, prefix):
-    if not prefix or len(prefix) != 2:
-        logging.error("Invalid station prefix length (must be 2)")
+    if not prefix or len(prefix) != PREFIX_LEN:
+        logging.error("Invalid station prefix length (must be {:d})".format(PREFIX_LEN))
         return None
     if not uid:
         logging.error("Missing station id for full station id generation")
         return None
-    return str(prefix) + '_' + str(uid)
+    fmt = '{:0' + str(STATIONID_LEN) + 'd}'
+    return str(prefix) + fmt.format(int(uid))
 
 
 def get_stationid_prefix(uid):
-    if len(uid) < 4:
+    if len(uid) < PREFIX_LEN + 1:
         logging.error("Could not extract stationid (Invalid station id length)")
         return None
-    return uid[:2]
+    return uid[:PREFIX_LEN]
 
 
 def get_stationid_without_prefix(uid):
-    if len(uid) < 4:
+    if len(uid) < PREFIX_LEN + 1:
         logging.error("Could not extract stationid (Invalid station id length)")
         return None
-    return uid[3:]
+    return uid[PREFIX_LEN:].lstrip('0')
 
 
 def get_cache_path(cache_name):

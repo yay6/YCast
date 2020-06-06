@@ -6,7 +6,7 @@ import yaml
 import ycast.vtuner as vtuner
 import ycast.generic as generic
 
-ID_PREFIX = "MY"
+ID_PREFIX = "9"
 
 config_file = 'stations.yml'
 
@@ -71,17 +71,20 @@ def get_stations_by_category(category):
     if my_stations_yaml and category in my_stations_yaml:
         for station_name in my_stations_yaml[category]:
             station_url = my_stations_yaml[category][station_name]
-            station_id = str(get_checksum(station_name + station_url)).upper()
+            station_id = str(get_checksum(station_name + station_url, generic.STATIONID_LEN)).upper()
             stations.append(Station(station_id, station_name, station_url, category))
     return stations
 
 
-def get_checksum(feed, charlimit=12):
+def get_checksum(feed, charlimit=12, only_digits=True):
     hash_feed = feed.encode()
     hash_object = hashlib.md5(hash_feed)
     digest = hash_object.digest()
     xor_fold = bytearray(digest[:8])
     for i, b in enumerate(digest[8:]):
         xor_fold[i] ^= b
-    digest_xor_fold = ''.join(format(x, '02x') for x in bytes(xor_fold))
-    return digest_xor_fold[:charlimit]
+    if only_digits:
+        digest_xor_fold = str(int.from_bytes(bytes(xor_fold), "big"))
+    else:
+        digest_xor_fold = ''.join(format(x, '02x') for x in bytes(xor_fold))
+    return digest_xor_fold[:charlimit].lstrip("0")
