@@ -123,7 +123,7 @@ def get_genre_directories():
 
 def get_stations_by_country(country):
     stations = []
-    stations_json = request('stations/search?order=name&reverse=false&countryExact=true&country=' + str(country))
+    stations_json = request('stations/bycountryexact/' + str(country) +'?order=name&reverse=false')
     for station_json in stations_json:
         if SHOW_BROKEN_STATIONS or get_json_attr(station_json, 'lastcheckok') == 1:
             stations.append(Station(station_json))
@@ -132,7 +132,7 @@ def get_stations_by_country(country):
 
 def get_stations_by_language(language):
     stations = []
-    stations_json = request('stations/search?order=name&reverse=false&languageExact=true&language=' + str(language))
+    stations_json = request('stations/bylanguageexact/' + str(language) + '?order=name&reverse=false')
     for station_json in stations_json:
         if SHOW_BROKEN_STATIONS or get_json_attr(station_json, 'lastcheckok') == 1:
             stations.append(Station(station_json))
@@ -141,7 +141,7 @@ def get_stations_by_language(language):
 
 def get_stations_by_genre(genre):
     stations = []
-    stations_json = request('stations/search?order=name&reverse=false&tagExact=true&tag=' + str(genre))
+    stations_json = request('stations/bytagexact/' + str(genre) + '?order=name&reverse=false')
     for station_json in stations_json:
         if SHOW_BROKEN_STATIONS or get_json_attr(station_json, 'lastcheckok') == 1:
             stations.append(Station(station_json))
