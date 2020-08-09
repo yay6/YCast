@@ -1,7 +1,7 @@
 import logging
 import re
 
-from flask import Flask, request, url_for, redirect, abort, make_response
+from flask import Flask, request, url_for, redirect, abort, make_response, Response
 
 import ycast.vtuner as vtuner
 import ycast.radiobrowser as radiobrowser
@@ -129,6 +129,8 @@ def upstream(path):
         return radiobrowser_landing()
     if 'FavXML.asp' in path:
         return my_stations_landing()
+    if 'dynamOD' in path and request.args.get('id'):
+        return get_stream_url()
     if 'loginXML.asp' in path:
         return landing()
     logging.error("Unhandled upstream query (/setupapp/%s)", path)
@@ -247,7 +249,7 @@ def get_stream_url():
         logging.error("Could not get station with id '%s'", stationid)
         abort(404)
     logging.debug("Station with ID '%s' requested", station.id)
-    return vtuner_redirect(station.url)
+    return Response(station.url, mimetype='audio/x-mpegurl')
 
 
 @app.route('/' + PATH_ROOT + '/' + PATH_STATION)
