@@ -145,11 +145,13 @@ def upstream(path):
            methods=['GET', 'POST'])
 def landing(path=''):
     page = vtuner.Page()
-    page.add(vtuner.Directory('Radiobrowser', url_for('radiobrowser_landing', _external=True), 4))
+    rb = vtuner.Directory('Radiobrowser', url_for('radiobrowser_landing', _external=True), 4)
     if my_stations_enabled:
         page.add(vtuner.Directory('My Stations', url_for('my_stations_landing', _external=True),
                                   len(my_stations.get_category_directories())))
+        page.add(rb)
     else:
+        page.add(rb)
         page.add(vtuner.Display("'My Stations' feature not configured."))
         page.set_count(1)
     return page.to_string()
